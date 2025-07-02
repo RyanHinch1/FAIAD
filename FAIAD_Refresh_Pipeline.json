@@ -1,0 +1,150 @@
+{
+    "name": "pl_Refresh_People_SharePoint_Option2",
+    "objectId": "5b649a3e-d30a-4c60-a90f-a2fbb58639e2",
+    "properties": {
+        "activities": [
+            {
+                "name": "Until1",
+                "type": "Until",
+                "dependsOn": [],
+                "typeProperties": {
+                    "expression": {
+                        "value": "@or(equals(variables('varCounter'),3),equals(variables('varIsSuccess'), variables('varSuccess')))",
+                        "type": "Expression"
+                    },
+                    "activities": [
+                        {
+                            "name": "dfactivity_People_SharePoint",
+                            "type": "RefreshDataflow",
+                            "dependsOn": [],
+                            "policy": {
+                                "timeout": "0.12:00:00",
+                                "retry": 0,
+                                "retryIntervalInSeconds": 30,
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "dataflowId": "e8ac6cfc-4ff9-44a8-b220-805d20311b1b",
+                                "workspaceId": "12b82447-b6b5-4c60-9d7b-424d04e981a6",
+                                "notifyOption": "NoNotification"
+                            }
+                        },
+                        {
+                            "name": "set_varIsSuccess",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "dfactivity_People_SharePoint",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "variableName": "varIsSuccess",
+                                "value": {
+                                    "value": "@variables('varSuccess')",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "set_varTempCounter",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "dfactivity_People_SharePoint",
+                                    "dependencyConditions": [
+                                        "Failed"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "variableName": "varTempCounter",
+                                "value": {
+                                    "value": "@add(variables('varCounter'),1)",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "set_varCounter",
+                            "type": "SetVariable",
+                            "dependsOn": [
+                                {
+                                    "activity": "set_varTempCounter",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "policy": {
+                                "secureOutput": false,
+                                "secureInput": false
+                            },
+                            "typeProperties": {
+                                "variableName": "varCounter",
+                                "value": {
+                                    "value": "@variables('varTempCounter')",
+                                    "type": "Expression"
+                                }
+                            }
+                        },
+                        {
+                            "name": "wait_onFailure",
+                            "type": "Wait",
+                            "dependsOn": [
+                                {
+                                    "activity": "set_varCounter",
+                                    "dependencyConditions": [
+                                        "Succeeded"
+                                    ]
+                                }
+                            ],
+                            "typeProperties": {
+                                "waitTimeInSeconds": {
+                                    "value": "@if(\n            greater(variables('varCounter'), 1),\n            if(equals(variables('varCounter'), 2),\n                mul(variables('varWaitTime'),15 ), \n                mul(variables('varWaitTime'), 0)\n            ),\n            mul(variables('varWaitTime'),5 )\n        )",
+                                    "type": "Expression"
+                                }
+                            }
+                        }
+                    ],
+                    "timeout": "0.12:00:00"
+                }
+            }
+        ],
+        "variables": {
+            "varCounter": {
+                "type": "Integer",
+                "defaultValue": 0
+            },
+            "varTempCounter": {
+                "type": "Integer",
+                "defaultValue": 0
+            },
+            "varIsSuccess": {
+                "type": "String",
+                "defaultValue": "No"
+            },
+            "varSuccess": {
+                "type": "String",
+                "defaultValue": "Yes"
+            },
+            "varWaitTime": {
+                "type": "Integer",
+                "defaultValue": 60
+            }
+        },
+        "lastModifiedByObjectId": "77f10471-3b5a-4640-81dd-3e5fa5e58305",
+        "lastPublishTime": "2024-05-03T21:40:32Z"
+    }
+}

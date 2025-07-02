@@ -1,0 +1,69 @@
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE VIEW [dbo].[Geo] AS (select [$Outer].[CityID],
+    [$Outer].[CityName],
+    [$Outer].[LatestRecordedPopulation],
+    [$Outer].[StateProvinceCode],
+    [$Outer].[StateProvinceName],
+    [$Outer].[SalesTerritory],
+    [$Inner].[CountryName],
+    [$Inner].[FormalName],
+    [$Inner].[IsoAlpha3Code],
+    [$Inner].[IsoNumericCode],
+    [$Inner].[CountryType],
+    [$Inner].[Continent],
+    [$Inner].[Region],
+    [$Inner].[Subregion]
+from 
+(
+    select [$Outer].[CityID],
+        [$Outer].[CityName],
+        [$Outer].[StateProvinceID],
+        [$Outer].[Location],
+        [$Outer].[LatestRecordedPopulation],
+        [$Outer].[LastEditedBy],
+        [$Outer].[ValidFrom],
+        [$Outer].[ValidTo],
+        [$Inner].[StateProvinceCode],
+        [$Inner].[StateProvinceName],
+        [$Inner].[CountryID],
+        [$Inner].[SalesTerritory]
+    from [lh_FAIAD].[dbo].[Cities] as [$Outer]
+    inner join 
+    (
+        select [_].[StateProvinceID] as [StateProvinceID2],
+            [_].[StateProvinceCode] as [StateProvinceCode],
+            [_].[StateProvinceName] as [StateProvinceName],
+            [_].[CountryID] as [CountryID],
+            [_].[SalesTerritory] as [SalesTerritory],
+            [_].[Border] as [Border],
+            [_].[LatestRecordedPopulation] as [LatestRecordedPopulation2],
+            [_].[LastEditedBy] as [LastEditedBy2],
+            [_].[ValidFrom] as [ValidFrom2],
+            [_].[ValidTo] as [ValidTo2]
+        from [lh_FAIAD].[dbo].[States] as [_]
+    ) as [$Inner] on ([$Outer].[StateProvinceID] = [$Inner].[StateProvinceID2] or [$Outer].[StateProvinceID] is null and [$Inner].[StateProvinceID2] is null)
+) as [$Outer]
+inner join 
+(
+    select [_].[CountryID] as [CountryID2],
+        [_].[CountryName] as [CountryName],
+        [_].[FormalName] as [FormalName],
+        [_].[IsoAlpha3Code] as [IsoAlpha3Code],
+        [_].[IsoNumericCode] as [IsoNumericCode],
+        [_].[CountryType] as [CountryType],
+        [_].[LatestRecordedPopulation] as [LatestRecordedPopulation2],
+        [_].[Continent] as [Continent],
+        [_].[Region] as [Region],
+        [_].[Subregion] as [Subregion],
+        [_].[Border] as [Border],
+        [_].[LastEditedBy] as [LastEditedBy2],
+        [_].[ValidFrom] as [ValidFrom2],
+        [_].[ValidTo] as [ValidTo2]
+    from [lh_FAIAD].[dbo].[Countries] as [_]
+) as [$Inner] on ([$Outer].[CountryID] = [$Inner].[CountryID2] or [$Outer].[CountryID] is null and [$Inner].[CountryID2] is null))
+GO
+
